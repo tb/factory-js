@@ -1,4 +1,4 @@
-# Factory
+# Factory [![Build Status](https://travis-ci.org/tb/factory.svg)](https://travis-ci.org/tb/factory)
 
 Building JavaScript objects inspired by [rosie](https://github.com/bkeepers/rosie) and
 [factory_girl](https://github.com/thoughtbot/factory_girl).
