@@ -62,7 +62,15 @@ TODO: add example
 
 ## Custom build function to plug into Ember.js
 
-TODO: add example
+    Factory.buildWith(function(name, attrs) {
+      return Ember.run(function() {
+        return App.__container__.lookup('store:main').createRecord(name, attrs);
+      });
+    });
+ 
+See live example at [jsbin](http://emberjs.jsbin.com/serolule/edit)
+
+NOTE: You need to call Factory.reset() to reset sequences for each test run.
 
 # Contributing
 
