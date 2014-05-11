@@ -1,26 +1,32 @@
 var Factory;
 
 Factory = (function() {
+  var Adapter;
+
   function Factory() {}
+
+  Factory.Adapter = Adapter = (function() {
+    function Adapter() {}
+
+    Adapter.prototype.build = function(factory, name, attrs) {
+      return attrs;
+    };
+
+    Adapter.prototype.create = function(factory, name, attrs) {
+      return attrs;
+    };
+
+    return Adapter;
+
+  })();
 
   Factory.factories = {};
 
-  Factory.buildFn = function(name, attrs) {
-    return attrs;
-  };
-
-  Factory.createFn = function(name, attrs) {
-    return attrs;
-  };
+  Factory.adapter = new Adapter();
 
   Factory.clear = function() {
     this.factories = {};
-    this.buildFn = function(name, attrs) {
-      return attrs;
-    };
-    return this.createFn = function(name, attrs) {
-      return attrs;
-    };
+    return this.adapter = new Adapter();
   };
 
   Factory.reset = function() {
@@ -36,7 +42,7 @@ Factory = (function() {
 
   Factory.define = function(name, block) {
     var definition;
-    definition = new FactoryDefinition(name, this.buildFn, this.createFn);
+    definition = new FactoryDefinition(name);
     if (typeof block === 'function') {
       block.call(definition);
     }
@@ -74,7 +80,7 @@ Factory = (function() {
       };
     })(this));
     attributes = factory.attributes(attrs, traits);
-    result = build ? factory[build](name, attributes.withoutIgnored) : attributes.withoutIgnored;
+    result = build ? factory.adapter[build](factory, name, attributes.withoutIgnored) : attributes.withoutIgnored;
     traits.unshift(factory);
     traits.map(function(factory) {
       return factory.applyCallbacks(result, attributes.withIgnored);
@@ -120,14 +126,6 @@ Factory = (function() {
     })(this));
   };
 
-  Factory.buildWith = function(fn) {
-    return this.buildFn = fn;
-  };
-
-  Factory.createWith = function(fn) {
-    return this.createFn = fn;
-  };
-
   return Factory;
 
 })();
@@ -142,24 +140,15 @@ var FactoryDefinition,
   __slice = [].slice;
 
 FactoryDefinition = (function() {
-  function FactoryDefinition(name, buildFn, createFn) {
+  function FactoryDefinition(name) {
     this.name = name;
-    this.build = buildFn;
-    this.create = createFn;
+    this.adapter = Factory.adapter;
     this.attrs = {};
     this.ignores = {};
     this.sequences = {};
     this.traits = {};
     this.callbacks = [];
   }
-
-  FactoryDefinition.prototype.buildWith = function(fn) {
-    return this.build = fn;
-  };
-
-  FactoryDefinition.prototype.createWith = function(fn) {
-    return this.create = fn;
-  };
 
   FactoryDefinition.prototype.after = function(callback) {
     return this.callbacks.push(callback);
@@ -191,7 +180,7 @@ FactoryDefinition = (function() {
 
   FactoryDefinition.prototype.trait = function(name, block) {
     var definition;
-    definition = new FactoryDefinition(name, this.buildFn, this.createFn);
+    definition = new FactoryDefinition(name);
     if (typeof block === 'function') {
       block.call(definition);
     }

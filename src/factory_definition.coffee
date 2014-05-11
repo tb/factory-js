@@ -1,16 +1,12 @@
 class FactoryDefinition
-  constructor: (name, buildFn, createFn) ->
+  constructor: (name) ->
     @name = name
-    @build = buildFn
-    @create = createFn
+    @adapter = Factory.adapter
     @attrs = {}
     @ignores = {}
     @sequences = {}
     @traits = {}
     @callbacks = []
-
-  buildWith: (fn) -> @build = fn
-  createWith: (fn) -> @create = fn
 
   after: (callback) ->
     @callbacks.push callback
@@ -30,7 +26,7 @@ class FactoryDefinition
       block.call this, ++factory.sequences[attr]
 
   trait: (name, block) ->
-    definition = new FactoryDefinition(name, @buildFn, @createFn)
+    definition = new FactoryDefinition(name)
     block.call(definition) if typeof block is 'function'
     @traits[name] = definition
 

@@ -1,19 +1,22 @@
 class Factory
+  @Adapter = class Adapter
+    constructor: () ->
+    build: (factory, name, attrs) -> attrs
+    create: (factory, name, attrs) -> attrs
+
   @factories: {}
-  @buildFn: (name, attrs) -> attrs
-  @createFn: (name, attrs) -> attrs
+  @adapter = new Adapter()
 
   @clear: ->
     @factories = {}
-    @buildFn = (name, attrs) -> attrs
-    @createFn = (name, attrs) -> attrs
+    @adapter = new Adapter()
 
   @reset: ->
     for name,factory of @factories
       factory.sequences = {}
 
   @define: (name, block) ->
-    definition = new FactoryDefinition(name, @buildFn, @createFn)
+    definition = new FactoryDefinition(name)
     block.call(definition) if typeof block is 'function'
     @factories[name] = definition
 
@@ -31,9 +34,12 @@ class Factory
 
     factory = @getFactory(name)
     traits = names[1..names.length].map (name) => @getTrait factory, name
-
     attributes = factory.attributes(attrs, traits)
-    result = if build then factory[build](name, attributes.withoutIgnored) else attributes.withoutIgnored
+
+    result = if build
+      factory.adapter[build](factory, name, attributes.withoutIgnored)
+    else
+      attributes.withoutIgnored
 
     traits.unshift(factory)
     traits.map (factory) -> factory.applyCallbacks result, attributes.withIgnored
@@ -46,8 +52,5 @@ class Factory
 
   @buildList:  (names, count, attrs) -> [0...count].map => @build names, attrs
   @createList: (names, count, attrs) -> [0...count].map => @create names, attrs
-
-  @buildWith:  (fn) -> @buildFn = fn
-  @createWith: (fn) -> @createFn = fn
 
 if module?.exports then module.exports = Factory else window.Factory = Factory
