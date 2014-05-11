@@ -62,11 +62,11 @@ TODO: add example
 
 ## Custom build function to plug into Ember.js
 
-    Factory.buildWith(function(name, attrs) {
-      return Ember.run(function() {
-        return App.__container__.lookup('store:main').createRecord(name, attrs);
-      });
-    });
+    class Factory.EmberDataAdapter extends Factory.Adapter
+      build: (factory, name, attrs) ->
+        Ember.run -> App.__container__.lookup('store:main').createRecord name, attrs
+
+    Factory.adapter = new Factory.EmberDataAdapter()
  
 See live example at [jsbin](http://emberjs.jsbin.com/serolule/edit)
 
