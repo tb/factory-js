@@ -1,12 +1,21 @@
 class FactoryDefinition
   constructor: (name) ->
     @name = name
-    @adapter = Factory.adapter
+    @buildAdapter = new Factory.adapter(@)
     @attrs = {}
     @ignores = {}
     @sequences = {}
     @traits = {}
     @callbacks = []
+
+  adapter: (adapter) ->
+    @buildAdapter = new adapter(@)
+
+  build: (buildType, name, attrs) ->
+    if @buildAdapter[buildType]
+      @buildAdapter[buildType](name, attrs)
+    else
+      attrs
 
   after: (callback) ->
     @callbacks.push callback

@@ -1,15 +1,15 @@
 class Factory
   @Adapter = class Adapter
-    constructor: () ->
-    build: (factory, name, attrs) -> attrs
-    create: (factory, name, attrs) -> attrs
+    constructor: (factory) -> @factory = factory
+    build: (name, attrs) -> attrs
+    create: (name, attrs) -> attrs
 
   @factories: {}
-  @adapter = new Adapter()
+  @adapter = Factory.Adapter
 
   @clear: ->
     @factories = {}
-    @adapter = new Adapter()
+    @adapter = Factory.Adapter
 
   @reset: ->
     for name,factory of @factories
@@ -28,29 +28,33 @@ class Factory
     trait = factory.traits[name]
     trait ? trait : throw new Error("undefined trait \"#{name}\" for factory \"#{@name}\"")
 
-  @abstractBuild: (names, attrs, build) ->
+  @abstractBuild: (buildType, names, attrs) ->
     names = names.split /\s+/
     name = names[0]
 
     factory = @getFactory(name)
     traits = names[1..names.length].map (name) => @getTrait factory, name
     attributes = factory.attributes(attrs, traits)
-
-    result = if build
-      factory.adapter[build](factory, name, attributes.withoutIgnored)
-    else
-      attributes.withoutIgnored
-
+    result = factory.build(buildType, name, attributes.withoutIgnored)
     traits.unshift(factory)
     traits.map (factory) -> factory.applyCallbacks result, attributes.withIgnored
 
     result
 
-  @attributes: (names, attrs) -> @abstractBuild names, attrs
-  @build: (names, attrs) -> @abstractBuild names, attrs, 'build'
-  @create: (names, attrs) -> @abstractBuild names, attrs, 'create'
+  @attributes: (names, attrs) -> @abstractBuild 'attributes', names, attrs
+  @build:      (names, attrs) -> @abstractBuild 'build', names, attrs
+  @create:     (names, attrs) -> @abstractBuild 'create', names, attrs
 
   @buildList:  (names, count, attrs) -> [0...count].map => @build names, attrs
   @createList: (names, count, attrs) -> [0...count].map => @create names, attrs
+
+  @setupForEmber: (namespace) ->
+    unless namespace? then throw new Error("undefined \"#{namespace}\"")
+
+    class Factory.EmberDataAdapter extends Factory.Adapter
+      build: (name, attrs) -> Ember.run -> namespace.__container__.lookup('store:main').createRecord name, attrs
+      create: (name, attrs) -> @build name, attrs
+
+    Factory.adapter = Factory.EmberDataAdapter
 
 if module?.exports then module.exports = Factory else window.Factory = Factory

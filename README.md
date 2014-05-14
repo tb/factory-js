@@ -60,15 +60,9 @@ result:
 
 TODO: add example
 
-## Custom build function to plug into Ember.js
+## Setup for Ember.js
 
-    class Factory.EmberDataAdapter extends Factory.Adapter
-      build: (factory, name, attrs) ->
-        Ember.run -> App.__container__.lookup('store:main').createRecord name, attrs
-
-    Factory.adapter = new Factory.EmberDataAdapter()
- 
-See live example at [jsbin](http://emberjs.jsbin.com/serolule/edit)
+  Call `Factory.setupForEmber(App)` before factory definitions. See live example at [jsbin](http://emberjs.jsbin.com/serolule/edit)
 
 NOTE: You need to call Factory.reset() to reset sequences for each test run.
 

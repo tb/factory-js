@@ -1,4 +1,7 @@
-var Factory;
+/*! factory 1.1.0 */
+var Factory,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 Factory = (function() {
   var Adapter;
@@ -6,13 +9,15 @@ Factory = (function() {
   function Factory() {}
 
   Factory.Adapter = Adapter = (function() {
-    function Adapter() {}
+    function Adapter(factory) {
+      this.factory = factory;
+    }
 
-    Adapter.prototype.build = function(factory, name, attrs) {
+    Adapter.prototype.build = function(name, attrs) {
       return attrs;
     };
 
-    Adapter.prototype.create = function(factory, name, attrs) {
+    Adapter.prototype.create = function(name, attrs) {
       return attrs;
     };
 
@@ -22,11 +27,11 @@ Factory = (function() {
 
   Factory.factories = {};
 
-  Factory.adapter = new Adapter();
+  Factory.adapter = Factory.Adapter;
 
   Factory.clear = function() {
     this.factories = {};
-    return this.adapter = new Adapter();
+    return this.adapter = Factory.Adapter;
   };
 
   Factory.reset = function() {
@@ -69,7 +74,7 @@ Factory = (function() {
     };
   };
 
-  Factory.abstractBuild = function(names, attrs, build) {
+  Factory.abstractBuild = function(buildType, names, attrs) {
     var attributes, factory, name, result, traits;
     names = names.split(/\s+/);
     name = names[0];
@@ -80,7 +85,7 @@ Factory = (function() {
       };
     })(this));
     attributes = factory.attributes(attrs, traits);
-    result = build ? factory.adapter[build](factory, name, attributes.withoutIgnored) : attributes.withoutIgnored;
+    result = factory.build(buildType, name, attributes.withoutIgnored);
     traits.unshift(factory);
     traits.map(function(factory) {
       return factory.applyCallbacks(result, attributes.withIgnored);
@@ -89,15 +94,15 @@ Factory = (function() {
   };
 
   Factory.attributes = function(names, attrs) {
-    return this.abstractBuild(names, attrs);
+    return this.abstractBuild('attributes', names, attrs);
   };
 
   Factory.build = function(names, attrs) {
-    return this.abstractBuild(names, attrs, 'build');
+    return this.abstractBuild('build', names, attrs);
   };
 
   Factory.create = function(names, attrs) {
-    return this.abstractBuild(names, attrs, 'create');
+    return this.abstractBuild('create', names, attrs);
   };
 
   Factory.buildList = function(names, count, attrs) {
@@ -126,6 +131,33 @@ Factory = (function() {
     })(this));
   };
 
+  Factory.setupForEmber = function(namespace) {
+    if (namespace == null) {
+      throw new Error("undefined \"" + namespace + "\"");
+    }
+    Factory.EmberDataAdapter = (function(_super) {
+      __extends(EmberDataAdapter, _super);
+
+      function EmberDataAdapter() {
+        return EmberDataAdapter.__super__.constructor.apply(this, arguments);
+      }
+
+      EmberDataAdapter.prototype.build = function(name, attrs) {
+        return Ember.run(function() {
+          return namespace.__container__.lookup('store:main').createRecord(name, attrs);
+        });
+      };
+
+      EmberDataAdapter.prototype.create = function(name, attrs) {
+        return this.build(name, attrs);
+      };
+
+      return EmberDataAdapter;
+
+    })(Factory.Adapter);
+    return Factory.adapter = Factory.EmberDataAdapter;
+  };
+
   return Factory;
 
 })();
@@ -142,13 +174,25 @@ var FactoryDefinition,
 FactoryDefinition = (function() {
   function FactoryDefinition(name) {
     this.name = name;
-    this.adapter = Factory.adapter;
+    this.buildAdapter = new Factory.adapter(this);
     this.attrs = {};
     this.ignores = {};
     this.sequences = {};
     this.traits = {};
     this.callbacks = [];
   }
+
+  FactoryDefinition.prototype.adapter = function(adapter) {
+    return this.buildAdapter = new adapter(this);
+  };
+
+  FactoryDefinition.prototype.build = function(buildType, name, attrs) {
+    if (this.buildAdapter[buildType]) {
+      return this.buildAdapter[buildType](name, attrs);
+    } else {
+      return attrs;
+    }
+  };
 
   FactoryDefinition.prototype.after = function(callback) {
     return this.callbacks.push(callback);

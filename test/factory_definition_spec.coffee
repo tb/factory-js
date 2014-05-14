@@ -126,33 +126,30 @@ describe 'FactoryDefinition', ->
       expect(Factory.create 'factoryItem with_city with_street').to.contain id: 2
       expect(Factory.create 'factoryItem').to.contain id: 3
 
-  describe '#adapter', ->
-    describe 'custom build', ->
+  describe '#buildAdapter', ->
+    describe 'default', ->
+      it 'Factory.Adapter', ->
+        Factory.define 'factoryItem', -> @attr 'number', 123
+        expect(Factory.factories['factoryItem'].buildAdapter).to.be.an.instanceof Factory.Adapter
+
+    describe 'custom', ->
       beforeEach ->
         class Factory.JsonAdapter extends Factory.Adapter
-          build: (factory, name, attrs) -> "#{name}: #{JSON.stringify attrs}"
+          build: (name, attrs) -> "#{name}Build: #{JSON.stringify attrs}"
+          create: (name, attrs) -> "#{name}Create: #{JSON.stringify attrs}"
 
         Factory.define 'factoryItem', ->
           @attr 'number', 123
-          @adapter = new Factory.JsonAdapter()
+          @adapter Factory.JsonAdapter
+
+      it 'Factory.JsonAdapter', ->
+        expect(Factory.factories['factoryItem'].buildAdapter).to.be.an.instanceof Factory.JsonAdapter
 
       it 'build changed', ->
-        expect(Factory.build 'factoryItem').to.equal 'factoryItem: {"number":123}'
+        expect(Factory.build 'factoryItem').to.equal 'factoryItemBuild: {"number":123}'
 
-      it 'attributes not changed', ->
-        expect(Factory.attributes 'factoryItem').to.deep.equal {"number":123}
-
-    describe 'custom create', ->
-      beforeEach ->
-        class Factory.JsonAdapter extends Factory.Adapter
-          create: (factory, name, attrs) -> "#{name}: #{JSON.stringify attrs}"
-
-        Factory.define 'factoryItem', ->
-          @attr 'number', 123
-          @adapter = new Factory.JsonAdapter()
-
-      it 'customized', ->
-        expect(Factory.create 'factoryItem').to.equal 'factoryItem: {"number":123}'
+      it 'create changed', ->
+        expect(Factory.create 'factoryItem').to.equal 'factoryItemCreate: {"number":123}'
 
       it 'attributes not changed', ->
         expect(Factory.attributes 'factoryItem').to.deep.equal {"number":123}
