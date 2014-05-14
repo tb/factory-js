@@ -41,14 +41,14 @@ describe 'FactoryDefinition', ->
       expect(Factory.create('factoryItem').number).to.be.within(1,10)
 
     it 'builds subitems', ->
-      Factory.define 'factory_subitem', ->
+      Factory.define 'factorySubitem', ->
         @sequence 'id'
 
       Factory.define 'factoryItem', ->
         @sequence 'id'
         @attr 'subitems', -> [
-          Factory.create('factory_subitem'),
-          Factory.create('factory_subitem')
+          Factory.create('factorySubitem'),
+          Factory.create('factorySubitem')
         ]
 
       json = Factory.create 'factoryItem'
@@ -56,6 +56,48 @@ describe 'FactoryDefinition', ->
       expect(json).to.have.deep.property 'id', 1
       expect(json).to.have.deep.property 'subitems[0].id', 1
       expect(json).to.have.deep.property 'subitems[1].id', 2
+
+  describe '#hasMany', ->
+    beforeEach ->
+      Factory.define 'factorySubitem', ->
+        @sequence 'id'
+        @trait 'active', -> @attr 'active', true
+        @trait 'inactive', -> @attr 'active', false
+
+      Factory.define 'factoryItem', ->
+        @sequence 'id'
+        @hasMany 'subitems', 'factorySubitem'
+
+    it 'with number', ->
+      json = Factory.create 'factoryItem', subitems: 2
+
+      expect(json).to.have.deep.property 'id', 1
+      expect(json).to.have.deep.property 'subitems[0].id', 1
+      expect(json).to.have.deep.property 'subitems[1].id', 2
+
+    it 'with Array of hashes', ->
+      json = Factory.create 'factoryItem', subitems: [{id: 123}, {id: 987}]
+
+      expect(json).to.have.deep.property 'id', 1
+      expect(json).to.have.deep.property 'subitems[0].id', 123
+      expect(json).to.have.deep.property 'subitems[1].id', 987
+
+    it 'with Array of objects', ->
+      json = Factory.create 'factoryItem', subitems: [
+        Factory.create('factorySubitem'),
+        Factory.create('factorySubitem')
+      ]
+
+      expect(json).to.have.deep.property 'id', 1
+      expect(json).to.have.deep.property 'subitems[0].id', 1
+      expect(json).to.have.deep.property 'subitems[1].id', 2
+
+    it 'with Array of traits', ->
+      json = Factory.create 'factoryItem', subitems: ['active', 'inactive', 'inactive']
+
+      expect(json).to.have.deep.property 'id', 1
+      expect(json).to.have.deep.property 'subitems[0].active', true
+      expect(json).to.have.deep.property 'subitems[1].active', false
 
   describe '#ignore', ->
     afterAttributes = null

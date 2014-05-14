@@ -23,6 +23,25 @@ class FactoryDefinition
   attr: (attr, value) ->
     @attrs[attr] = (if typeof value is 'function' then value else -> value)
 
+  hasMany: (attr, factoryName) ->
+    @ignore attr, []
+    @after (attributes, factory) ->
+      @[attr] = [] unless collection instanceof Array
+      collection = @[attr]
+      collectionValues = attributes[attr]
+
+      if typeof collectionValues is 'number'
+        Factory.buildList(factoryName, collectionValues).forEach (object) =>
+          factory.buildAdapter['push'].call @, attr, object
+      else if collectionValues instanceof Array
+        collectionValues.forEach (objectValues) =>
+          object = if typeof objectValues is 'string'
+            Factory.build "#{factoryName} #{objectValues}"
+          else
+            Factory.build(factoryName, objectValues)
+
+          factory.buildAdapter['push'].call @, attr, object
+
   ignore: (attr, value) ->
     @ignores[attr] = (if typeof value is 'function' then value else -> value)
 
@@ -32,7 +51,7 @@ class FactoryDefinition
 
     @attrs[attr] = ->
       factory.sequences[attr] = factory.sequences[attr] || 0
-      block.call this, ++factory.sequences[attr]
+      block.call @, ++factory.sequences[attr]
 
   trait: (name, block) ->
     definition = new FactoryDefinition(name)
@@ -60,7 +79,7 @@ class FactoryDefinition
     return withIgnored: @hash.merge({}, attributes, ignoredAttributes), withoutIgnored: attributes
 
   applyCallbacks: (result, attributes) ->
-    @callbacks.forEach (callback) -> callback.call(result, attributes)
+    @callbacks.forEach (callback) => callback.call(result, attributes, @)
 
   hash:
     merge: (dest, objs...) ->

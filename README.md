@@ -5,12 +5,24 @@ Building JavaScript objects inspired by [rosie](https://github.com/bkeepers/rosi
 
 # Usage
 
+    Factory.define('vote', function() {
+      this.sequence('id');
+      this.attr('value', 0);
+      this.trait('up', function() {
+        return this.attr('value', 1);
+      });
+      return this.trait('down', function() {
+        return this.attr('value', -1);
+      });
+    });
+
     Factory.define('post', function() {
       this.sequence('id');
       this.sequence('title', function(i) {
         return "Post " + i;
       });
       this.attr('content', null);
+      this.hasMany('votes', 'vote');
       return this.after(function() {
         if (!this.content) {
           return this.content = "" + this.title + " content";
@@ -29,17 +41,32 @@ Building JavaScript objects inspired by [rosie](https://github.com/bkeepers/rosi
       });
     });
 
+
 NOTE: looks better with CoffeeScript ;-)
 
 ## Build with no attributes
 
     Factory.build('post')
-    # result: {"id":1,"title":"Post 1","content":"Post 1 content"}
+
+result:
+
+    {
+      "id":1,
+      "title":"Post 1",
+      "content":"Post 1 content"
+    }
 
 ## Build with attributes
 
     Factory.build('post', content: 'my content')
-    # result: {"content":"my content","id":1,"title":"Post 1"}
+
+result:
+
+    {
+      "id":1,
+      "title":"Post 1",
+      "content":"my content"
+    }
 
 ## Build with ignored attribute and after() callback
 
@@ -56,9 +83,42 @@ result:
       ]
     }
 
-## Build with traits
+## Build post with votes count
 
-TODO: add example
+    Factory.build('post', {votes: 2})
+
+result:
+
+    {
+      "content" : "Post 1 content",
+      "id" : 1,
+      "title" : "Post 1",
+      "votes" : [
+          {"id":1,"value":1},
+          {"id":2,"value":1}
+        ]
+    }
+
+## Build post with votes traits or attributes
+
+    Factory.build('post', {votes: ['up', 'down', 'up']})
+
+or
+
+    Factory.build('post', votes: [{value: 1}, {value: -1}, {value: 1}])
+
+result:
+
+    {
+      "content" : "Post 1 content",
+      "id" : 1,
+      "title" : "Post 1",
+      "votes" : [
+          {"id":1,"value":1},
+          {"id":2,"value":-1},
+          {"id":3,"value":1}
+        ]
+    }
 
 ## Setup for Ember.js
 

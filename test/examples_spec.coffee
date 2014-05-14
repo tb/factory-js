@@ -5,12 +5,19 @@ describe 'Examples', ->
   beforeEach ->
     Factory.clear()
 
-  describe 'category with posts', ->
+  describe 'category with posts and votes', ->
     beforeEach ->
+      Factory.define 'vote', ->
+        @sequence 'id'
+        @attr 'value', 1
+        @trait 'up', -> @attr 'value', 1
+        @trait 'down', -> @attr 'value', -1
+
       Factory.define 'post', ->
         @sequence 'id'
         @sequence 'title', (i) -> "Post #{i}"
         @attr 'content', null
+        @hasMany 'votes', 'vote'
         @after ->
           @content = "#{@title} content" unless @content
 
@@ -36,3 +43,18 @@ describe 'Examples', ->
       expect(category.name).to.equal 'First category'
       expect(category.posts).to.have.length 2
       console.log JSON.stringify(category)
+
+    it 'hasMany votes count', ->
+      post = Factory.build('post', {votes: 2})
+      expect(post.votes).to.have.length 2
+      console.log JSON.stringify(post)
+
+    it 'hasMany votes traits', ->
+      post = Factory.build('post', {votes: ['up', 'down', 'up']})
+      expect(post.votes).to.have.length 3
+      console.log JSON.stringify(post)
+
+    it 'hasMany votes attributes', ->
+      post = Factory.build('post', votes: [{value: 1}, {value: -1}, {value: 1}])
+      expect(post.votes).to.have.length 3
+      console.log JSON.stringify(post)

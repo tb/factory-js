@@ -3,6 +3,7 @@ class Factory
     constructor: (factory) -> @factory = factory
     build: (name, attrs) -> attrs
     create: (name, attrs) -> attrs
+    push: (name, object) -> @[name].push object
 
   @factories: {}
   @adapter = Factory.Adapter
@@ -52,8 +53,9 @@ class Factory
     unless namespace? then throw new Error("undefined \"#{namespace}\"")
 
     class Factory.EmberDataAdapter extends Factory.Adapter
-      build: (name, attrs) -> Ember.run -> namespace.__container__.lookup('store:main').createRecord name, attrs
+      build: (name, attrs) -> Ember.run => namespace.__container__.lookup('store:main').createRecord name, attrs
       create: (name, attrs) -> @build name, attrs
+      push: (name, object) -> Ember.run => @get(name).addObject object
 
     Factory.adapter = Factory.EmberDataAdapter
 

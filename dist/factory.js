@@ -1,4 +1,4 @@
-/*! factory 1.1.0 */
+/*! factory 1.2.0 */
 var Factory,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -19,6 +19,10 @@ Factory = (function() {
 
     Adapter.prototype.create = function(name, attrs) {
       return attrs;
+    };
+
+    Adapter.prototype.push = function(name, object) {
+      return this[name].push(object);
     };
 
     return Adapter;
@@ -143,13 +147,23 @@ Factory = (function() {
       }
 
       EmberDataAdapter.prototype.build = function(name, attrs) {
-        return Ember.run(function() {
-          return namespace.__container__.lookup('store:main').createRecord(name, attrs);
-        });
+        return Ember.run((function(_this) {
+          return function() {
+            return namespace.__container__.lookup('store:main').createRecord(name, attrs);
+          };
+        })(this));
       };
 
       EmberDataAdapter.prototype.create = function(name, attrs) {
         return this.build(name, attrs);
+      };
+
+      EmberDataAdapter.prototype.push = function(name, object) {
+        return Ember.run((function(_this) {
+          return function() {
+            return _this.get(name).addObject(object);
+          };
+        })(this));
       };
 
       return EmberDataAdapter;
@@ -201,6 +215,33 @@ FactoryDefinition = (function() {
   FactoryDefinition.prototype.attr = function(attr, value) {
     return this.attrs[attr] = (typeof value === 'function' ? value : function() {
       return value;
+    });
+  };
+
+  FactoryDefinition.prototype.hasMany = function(attr, factoryName) {
+    this.ignore(attr, []);
+    return this.after(function(attributes, factory) {
+      var collection, collectionValues;
+      if (!(collection instanceof Array)) {
+        this[attr] = [];
+      }
+      collection = this[attr];
+      collectionValues = attributes[attr];
+      if (typeof collectionValues === 'number') {
+        return Factory.buildList(factoryName, collectionValues).forEach((function(_this) {
+          return function(object) {
+            return factory.buildAdapter['push'].call(_this, attr, object);
+          };
+        })(this));
+      } else if (collectionValues instanceof Array) {
+        return collectionValues.forEach((function(_this) {
+          return function(objectValues) {
+            var object;
+            object = typeof objectValues === 'string' ? Factory.build("" + factoryName + " " + objectValues) : Factory.build(factoryName, objectValues);
+            return factory.buildAdapter['push'].call(_this, attr, object);
+          };
+        })(this));
+      }
     });
   };
 
@@ -261,9 +302,11 @@ FactoryDefinition = (function() {
   };
 
   FactoryDefinition.prototype.applyCallbacks = function(result, attributes) {
-    return this.callbacks.forEach(function(callback) {
-      return callback.call(result, attributes);
-    });
+    return this.callbacks.forEach((function(_this) {
+      return function(callback) {
+        return callback.call(result, attributes, _this);
+      };
+    })(this));
   };
 
   FactoryDefinition.prototype.hash = {
