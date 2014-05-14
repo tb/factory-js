@@ -34,12 +34,12 @@ describe 'Examples', ->
       console.log JSON.stringify(post)
 
     it 'custom content', ->
-      post = Factory.build 'post', content: 'my content'
+      post = Factory.build('post', {content: 'my content'})
       expect(post.content).to.equal 'my content'
       console.log JSON.stringify(post)
 
     it 'postsCount', ->
-      category = Factory.build 'category', name: 'First category', postsCount: 2
+      category = Factory.build('category',{name: 'First category', postsCount: 2})
       expect(category.name).to.equal 'First category'
       expect(category.posts).to.have.length 2
       console.log JSON.stringify(category)

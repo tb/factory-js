@@ -58,7 +58,7 @@ result:
 
 ## Build with attributes
 
-    Factory.build('post', content: 'my content')
+    Factory.build('post', {content: 'my content'})
 
 result:
 
@@ -70,7 +70,7 @@ result:
 
 ## Build with ignored attribute and after() callback
 
-    Factory.build('category', name: 'First category', postsCount: 2)
+    Factory.build('category',{name: 'First category', postsCount: 2})
 
 result:
 
