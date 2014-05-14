@@ -124,7 +124,7 @@ result:
 
   Call `Factory.setupForEmber(App)` before factory definitions. See live example at [jsbin](http://emberjs.jsbin.com/serolule/edit)
 
-NOTE: You need to call Factory.reset() to reset sequences for each test run.
+NOTE: You need to call `Factory.reset()` to reset sequences for each test run.
 
 # Contributing
 
