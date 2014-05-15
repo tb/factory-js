@@ -55,6 +55,6 @@ describe 'Examples', ->
       console.log JSON.stringify(post)
 
     it 'hasMany votes attributes', ->
-      post = Factory.build('post', votes: [{value: 1}, {value: -1}, {value: 1}])
+      post = Factory.build('post', {votes: [{value: 1}, {value: -1}, {value: 1}]})
       expect(post.votes).to.have.length 3
       console.log JSON.stringify(post)
