@@ -130,7 +130,7 @@ result:
 
 ## Adapters
 
-By default factory is building JavaScript objects using default Factory.Adapter
+By default factory is building JavaScript objects using default `Factory.Adapter`
 
     class Factory.Adapter
       constructor: (factory) -> @factory = factory
@@ -138,7 +138,7 @@ By default factory is building JavaScript objects using default Factory.Adapter
       create: (name, attrs) -> attrs
       push: (name, object) -> @[name].push object
 
-Factory integrates with Ember.js through Factory.EmberDataAdapter (used by `Factory.setupForEmber(App)`)
+Factory integrates with Ember.js through `Factory.EmberDataAdapter` (used by `Factory.setupForEmber(App)`)
 
     class Factory.EmberDataAdapter extends Factory.Adapter
       build: (name, attrs) -> Ember.run => App.__container__.lookup('store:main').createRecord name, attrs
