@@ -1,7 +1,8 @@
 /*! factory 1.2.0 */
 var Factory,
   __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  __slice = [].slice;
 
 Factory = (function() {
   var Adapter;
@@ -97,6 +98,31 @@ Factory = (function() {
     return result;
   };
 
+  Factory.abstractBuildList = function(buildType, names, list, attrs) {
+    var _i, _results;
+    if (typeof list === 'number') {
+      return (function() {
+        _results = [];
+        for (var _i = 0; 0 <= list ? _i < list : _i > list; 0 <= list ? _i++ : _i--){ _results.push(_i); }
+        return _results;
+      }).apply(this).map((function(_this) {
+        return function() {
+          return _this.abstractBuild(buildType, names, attrs);
+        };
+      })(this));
+    } else if (list instanceof Array) {
+      return list.map((function(_this) {
+        return function(listItem) {
+          if (typeof listItem === 'string') {
+            return _this.abstractBuild(buildType, "" + names + " " + listItem, attrs);
+          } else {
+            return _this.abstractBuild(buildType, names, _this.hash.merge({}, attrs, listItem));
+          }
+        };
+      })(this));
+    }
+  };
+
   Factory.attributes = function(names, attrs) {
     return this.abstractBuild('attributes', names, attrs);
   };
@@ -109,30 +135,12 @@ Factory = (function() {
     return this.abstractBuild('create', names, attrs);
   };
 
-  Factory.buildList = function(names, count, attrs) {
-    var _i, _results;
-    return (function() {
-      _results = [];
-      for (var _i = 0; 0 <= count ? _i < count : _i > count; 0 <= count ? _i++ : _i--){ _results.push(_i); }
-      return _results;
-    }).apply(this).map((function(_this) {
-      return function() {
-        return _this.build(names, attrs);
-      };
-    })(this));
+  Factory.buildList = function(names, list, attrs) {
+    return this.abstractBuildList('build', names, list, attrs);
   };
 
-  Factory.createList = function(names, count, attrs) {
-    var _i, _results;
-    return (function() {
-      _results = [];
-      for (var _i = 0; 0 <= count ? _i < count : _i > count; 0 <= count ? _i++ : _i--){ _results.push(_i); }
-      return _results;
-    }).apply(this).map((function(_this) {
-      return function() {
-        return _this.create(names, attrs);
-      };
-    })(this));
+  Factory.createList = function(names, list, attrs) {
+    return this.abstractBuildList('create', names, list, attrs);
   };
 
   Factory.setupForEmber = function(namespace) {
@@ -147,11 +155,9 @@ Factory = (function() {
       }
 
       EmberDataAdapter.prototype.build = function(name, attrs) {
-        return Ember.run((function(_this) {
-          return function() {
-            return namespace.__container__.lookup('store:main').createRecord(name, attrs);
-          };
-        })(this));
+        return Ember.run(function() {
+          return namespace.__container__.lookup('store:main').createRecord(name, attrs);
+        });
       };
 
       EmberDataAdapter.prototype.create = function(name, attrs) {
@@ -172,6 +178,29 @@ Factory = (function() {
     return Factory.adapter = Factory.EmberDataAdapter;
   };
 
+  Factory.hash = {
+    merge: function() {
+      var dest, k, obj, objs, v, _i, _len;
+      dest = arguments[0], objs = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+      for (_i = 0, _len = objs.length; _i < _len; _i++) {
+        obj = objs[_i];
+        for (k in obj) {
+          v = obj[k];
+          dest[k] = v;
+        }
+      }
+      return dest;
+    },
+    evaluate: function(obj) {
+      var k, _results;
+      _results = [];
+      for (k in obj) {
+        _results.push(obj[k] = typeof obj[k] === 'function' ? obj[k]() : obj[k]);
+      }
+      return _results;
+    }
+  };
+
   return Factory;
 
 })();
@@ -182,8 +211,7 @@ if (typeof module !== "undefined" && module !== null ? module.exports : void 0) 
   window.Factory = Factory;
 }
 
-var FactoryDefinition,
-  __slice = [].slice;
+var FactoryDefinition;
 
 FactoryDefinition = (function() {
   function FactoryDefinition(name) {
@@ -221,27 +249,14 @@ FactoryDefinition = (function() {
   FactoryDefinition.prototype.hasMany = function(attr, factoryName) {
     this.ignore(attr, []);
     return this.after(function(attributes, factory) {
-      var collection, collectionValues;
-      if (!(collection instanceof Array)) {
+      if (!(this[attr] instanceof Array)) {
         this[attr] = [];
       }
-      collection = this[attr];
-      collectionValues = attributes[attr];
-      if (typeof collectionValues === 'number') {
-        return Factory.buildList(factoryName, collectionValues).forEach((function(_this) {
-          return function(object) {
-            return factory.buildAdapter['push'].call(_this, attr, object);
-          };
-        })(this));
-      } else if (collectionValues instanceof Array) {
-        return collectionValues.forEach((function(_this) {
-          return function(objectValues) {
-            var object;
-            object = typeof objectValues === 'string' ? Factory.build("" + factoryName + " " + objectValues) : Factory.build(factoryName, objectValues);
-            return factory.buildAdapter['push'].call(_this, attr, object);
-          };
-        })(this));
-      }
+      return Factory.buildList(factoryName, attributes[attr]).forEach((function(_this) {
+        return function(object) {
+          return factory.buildAdapter['push'].call(_this, attr, object);
+        };
+      })(this));
     });
   };
 
@@ -274,7 +289,7 @@ FactoryDefinition = (function() {
 
   FactoryDefinition.prototype.attributes = function(attrs, traits) {
     var attr, attributes, ignoredAttributes;
-    attributes = this.hash.merge({}, attrs);
+    attributes = Factory.hash.merge({}, attrs);
     ignoredAttributes = {};
     traits.forEach(function(trait) {
       var attr, _results;
@@ -293,10 +308,10 @@ FactoryDefinition = (function() {
       ignoredAttributes[attr] = attributes.hasOwnProperty(attr) ? attributes[attr] : this.ignores[attr];
       delete attributes[attr];
     }
-    this.hash.evaluate(attributes);
-    this.hash.evaluate(ignoredAttributes);
+    Factory.hash.evaluate(attributes);
+    Factory.hash.evaluate(ignoredAttributes);
     return {
-      withIgnored: this.hash.merge({}, attributes, ignoredAttributes),
+      withIgnored: Factory.hash.merge({}, attributes, ignoredAttributes),
       withoutIgnored: attributes
     };
   };
@@ -307,29 +322,6 @@ FactoryDefinition = (function() {
         return callback.call(result, attributes, _this);
       };
     })(this));
-  };
-
-  FactoryDefinition.prototype.hash = {
-    merge: function() {
-      var dest, k, obj, objs, v, _i, _len;
-      dest = arguments[0], objs = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-      for (_i = 0, _len = objs.length; _i < _len; _i++) {
-        obj = objs[_i];
-        for (k in obj) {
-          v = obj[k];
-          dest[k] = v;
-        }
-      }
-      return dest;
-    },
-    evaluate: function(obj) {
-      var k, _results;
-      _results = [];
-      for (k in obj) {
-        _results.push(obj[k] = typeof obj[k] === 'function' ? obj[k]() : obj[k]);
-      }
-      return _results;
-    }
   };
 
   return FactoryDefinition;

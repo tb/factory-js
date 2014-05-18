@@ -57,45 +57,64 @@ describe 'Factory', ->
 
       expect(Factory.create 'factoryItem', number: 567).to.contain number: 567
 
-  describe '#createList', ->
+  describe '#abstractBuildList', ->
     beforeEach ->
       Factory.define 'factoryItem', ->
         @sequence 'id'
         @attr 'number', 123
+        @attr 'state', 'default'
+        @trait 'active',   -> @attr 'state', 'active'
+        @trait 'inactive', -> @attr 'state', 'inactive'
 
-    it 'count', ->
-      items = Factory.createList 'factoryItem', 2
-      expect(items).to.have.length 2
+    describe '#buildList', ->
+      it 'count', ->
+        items = Factory.buildList 'factoryItem', 2
+        expect(items).to.have.length 2
 
-    it 'default attr', ->
-      items = Factory.createList 'factoryItem', 2
-      expect(items[0]).to.deep.contain id: 1, number: 123
-      expect(items[1]).to.deep.contain id: 2, number: 123
+      it 'count and default attrs', ->
+        items = Factory.buildList 'factoryItem', 2
+        expect(items[0]).to.deep.contain id: 1, number: 123
+        expect(items[1]).to.deep.contain id: 2, number: 123
 
-    it 'overwrite attr', ->
-      items = Factory.createList 'factoryItem', 2, number: 567
-      expect(items[0]).to.deep.contain id: 1, number: 567
-      expect(items[1]).to.deep.contain id: 2, number: 567
+      it 'count and overwrite attrs', ->
+        items = Factory.buildList 'factoryItem', 2, number: 567
+        expect(items[0]).to.deep.contain id: 1, number: 567
+        expect(items[1]).to.deep.contain id: 2, number: 567
 
-  describe '#buildList', ->
-    beforeEach ->
-      Factory.define 'factoryItem', ->
-        @sequence 'id'
-        @attr 'number', 123
+      it 'attrs list and overwrite attrs', ->
+        items = Factory.buildList 'factoryItem', [{number: 123},{number: 567}], state: 'custom'
+        expect(items[0]).to.deep.contain id: 1, number: 123, state: 'custom'
+        expect(items[1]).to.deep.contain id: 2, number: 567, state: 'custom'
 
-    it 'count', ->
-      items = Factory.buildList 'factoryItem', 2
-      expect(items).to.have.length 2
+      it 'traits list and overwrite attrs', ->
+        items = Factory.buildList 'factoryItem', ['active', 'inactive'], number: 567
+        expect(items[0]).to.deep.contain id: 1, number: 567, state: 'active'
+        expect(items[1]).to.deep.contain id: 2, number: 567, state: 'inactive'
 
-    it 'default attr', ->
-      items = Factory.buildList 'factoryItem', 2
-      expect(items[0]).to.deep.contain id: 1, number: 123
-      expect(items[1]).to.deep.contain id: 2, number: 123
+    describe '#createList', ->
+      it 'count', ->
+        items = Factory.createList 'factoryItem', 2
+        expect(items).to.have.length 2
 
-    it 'overwrite attr', ->
-      items = Factory.buildList 'factoryItem', 2, number: 567
-      expect(items[0]).to.deep.contain id: 1, number: 567
-      expect(items[1]).to.deep.contain id: 2, number: 567
+      it 'count and default attrs', ->
+        items = Factory.createList 'factoryItem', 2
+        expect(items[0]).to.deep.contain id: 1, number: 123
+        expect(items[1]).to.deep.contain id: 2, number: 123
+
+      it 'count and overwrite attrs', ->
+        items = Factory.createList 'factoryItem', 2, number: 567
+        expect(items[0]).to.deep.contain id: 1, number: 567
+        expect(items[1]).to.deep.contain id: 2, number: 567
+
+      it 'attrs list and overwrite attrs', ->
+        items = Factory.createList 'factoryItem', [{number: 123},{number: 567}], state: 'custom'
+        expect(items[0]).to.deep.contain id: 1, number: 123, state: 'custom'
+        expect(items[1]).to.deep.contain id: 2, number: 567, state: 'custom'
+
+      it 'traits list and overwrite attrs', ->
+        items = Factory.createList 'factoryItem', ['active', 'inactive'], number: 567
+        expect(items[0]).to.deep.contain id: 1, number: 567, state: 'active'
+        expect(items[1]).to.deep.contain id: 2, number: 567, state: 'inactive'
 
   describe '#buildAdapter', ->
     describe 'default', ->

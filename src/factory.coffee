@@ -42,21 +42,41 @@ class Factory
 
     result
 
+  @abstractBuildList: (buildType, names, list, attrs) ->
+    if typeof list is 'number'
+      [0...list].map => @abstractBuild buildType, names, attrs
+    else if list instanceof Array
+      list.map (listItem) =>
+        if typeof listItem is 'string'
+          @abstractBuild buildType, "#{names} #{listItem}", attrs
+        else
+          @abstractBuild buildType, names, @hash.merge({}, attrs, listItem)
+
   @attributes: (names, attrs) -> @abstractBuild 'attributes', names, attrs
   @build:      (names, attrs) -> @abstractBuild 'build', names, attrs
   @create:     (names, attrs) -> @abstractBuild 'create', names, attrs
 
-  @buildList:  (names, count, attrs) -> [0...count].map => @build names, attrs
-  @createList: (names, count, attrs) -> [0...count].map => @create names, attrs
+  @buildList:  (names, list, attrs) -> @abstractBuildList 'build', names, list, attrs
+  @createList: (names, list, attrs) -> @abstractBuildList 'create', names, list, attrs
 
   @setupForEmber: (namespace) ->
     unless namespace? then throw new Error("undefined \"#{namespace}\"")
 
     class Factory.EmberDataAdapter extends Factory.Adapter
-      build: (name, attrs) -> Ember.run => namespace.__container__.lookup('store:main').createRecord name, attrs
+      build: (name, attrs) -> Ember.run -> namespace.__container__.lookup('store:main').createRecord name, attrs
       create: (name, attrs) -> @build name, attrs
       push: (name, object) -> Ember.run => @get(name).addObject object
 
     Factory.adapter = Factory.EmberDataAdapter
+
+  @hash:
+    merge: (dest, objs...) ->
+      for obj in objs
+        dest[k] = v for k, v of obj
+      dest
+
+    evaluate: (obj) ->
+      for k of obj
+        obj[k] =  if typeof obj[k] is 'function' then obj[k]() else obj[k]
 
 if module?.exports then module.exports = Factory else window.Factory = Factory

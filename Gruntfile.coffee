@@ -12,7 +12,7 @@ module.exports = (grunt) ->
           ]
       options:
         max_line_length:
-          value: 100
+          value: 120
           level: 'warn'
 
     coffee:

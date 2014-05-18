@@ -26,21 +26,10 @@ class FactoryDefinition
   hasMany: (attr, factoryName) ->
     @ignore attr, []
     @after (attributes, factory) ->
-      @[attr] = [] unless collection instanceof Array
-      collection = @[attr]
-      collectionValues = attributes[attr]
+      @[attr] = [] unless @[attr] instanceof Array
 
-      if typeof collectionValues is 'number'
-        Factory.buildList(factoryName, collectionValues).forEach (object) =>
-          factory.buildAdapter['push'].call @, attr, object
-      else if collectionValues instanceof Array
-        collectionValues.forEach (objectValues) =>
-          object = if typeof objectValues is 'string'
-            Factory.build "#{factoryName} #{objectValues}"
-          else
-            Factory.build(factoryName, objectValues)
-
-          factory.buildAdapter['push'].call @, attr, object
+      Factory.buildList(factoryName, attributes[attr]).forEach (object) =>
+        factory.buildAdapter['push'].call @, attr, object
 
   ignore: (attr, value) ->
     @ignores[attr] = (if typeof value is 'function' then value else -> value)
@@ -59,7 +48,7 @@ class FactoryDefinition
     @traits[name] = definition
 
   attributes: (attrs, traits) ->
-    attributes = @hash.merge {}, attrs
+    attributes = Factory.hash.merge {}, attrs
     ignoredAttributes = {}
 
     traits.forEach (trait) ->
@@ -73,20 +62,10 @@ class FactoryDefinition
       ignoredAttributes[attr] = if attributes.hasOwnProperty attr then attributes[attr] else @ignores[attr]
       delete attributes[attr]
 
-    @hash.evaluate attributes
-    @hash.evaluate ignoredAttributes
+    Factory.hash.evaluate attributes
+    Factory.hash.evaluate ignoredAttributes
 
-    return withIgnored: @hash.merge({}, attributes, ignoredAttributes), withoutIgnored: attributes
+    return withIgnored: Factory.hash.merge({}, attributes, ignoredAttributes), withoutIgnored: attributes
 
   applyCallbacks: (result, attributes) ->
     @callbacks.forEach (callback) => callback.call(result, attributes, @)
-
-  hash:
-    merge: (dest, objs...) ->
-      for obj in objs
-        dest[k] = v for k, v of obj
-      dest
-
-    evaluate: (obj) ->
-      for k of obj
-        obj[k] =  if typeof obj[k] is 'function' then obj[k]() else obj[k]
