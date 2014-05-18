@@ -1,7 +1,7 @@
 expect = require('chai').expect
 Factory = require("#{if process.env.COVER then '../build/instrument/dist/' else '../dist/'}factory.js")
 
-describe 'Factory.Definition', ->
+describe 'FactoryDefinition', ->
   beforeEach ->
     Factory.clear()
 
