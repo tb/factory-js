@@ -1,4 +1,4 @@
-/*! factory 1.2.0 */
+/*! factory 1.2.1 */
 var Factory,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -115,8 +115,10 @@ Factory = (function() {
         return function(listItem) {
           if (typeof listItem === 'string') {
             return _this.abstractBuild(buildType, "" + names + " " + listItem, attrs);
-          } else {
+          } else if (listItem.constructor === Object) {
             return _this.abstractBuild(buildType, names, _this.hash.merge({}, attrs, listItem));
+          } else {
+            return listItem;
           }
         };
       })(this));

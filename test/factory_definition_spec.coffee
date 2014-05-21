@@ -83,14 +83,26 @@ describe 'FactoryDefinition', ->
       expect(json).to.have.deep.property 'subitems[1].id', 987
 
     it 'with Array of objects', ->
+      class MyClass
+        constructor: (name, attrs) -> @attrs = attrs
+        myId: -> @attrs.id
+
+      class Factory.MyClassAdapter extends Factory.Adapter
+        build: (name, attrs) -> new MyClass(name, attrs)
+
+      Factory.define 'factorySubitem', ->
+        @adapter Factory.MyClassAdapter
+        @sequence 'id'
+        @trait 'active', -> @attr 'active', true
+        @trait 'inactive', -> @attr 'active', false
+
       json = Factory.create 'factoryItem', subitems: [
-        Factory.create('factorySubitem'),
-        Factory.create('factorySubitem')
+        Factory.build('factorySubitem', id: 123),
+        Factory.build('factorySubitem', id: 234)
       ]
 
-      expect(json).to.have.deep.property 'id', 1
-      expect(json).to.have.deep.property 'subitems[0].id', 1
-      expect(json).to.have.deep.property 'subitems[1].id', 2
+      expect(json.subitems[0].myId()).to.be.equal 123
+      expect(json.subitems[1].myId()).to.be.equal 234
 
     it 'with Array of traits', ->
       json = Factory.create 'factoryItem', subitems: ['active', 'inactive', 'inactive']

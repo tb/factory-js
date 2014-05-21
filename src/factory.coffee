@@ -49,8 +49,10 @@ class Factory
       list.map (listItem) =>
         if typeof listItem is 'string'
           @abstractBuild buildType, "#{names} #{listItem}", attrs
-        else
+        else if listItem.constructor == Object
           @abstractBuild buildType, names, @hash.merge({}, attrs, listItem)
+        else
+          listItem
 
   @attributes: (names, attrs) -> @abstractBuild 'attributes', names, attrs
   @build:      (names, attrs) -> @abstractBuild 'build', names, attrs
