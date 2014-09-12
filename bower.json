@@ -1,4 +1,5 @@
-me": "factory",
+{
+  "name": "factory",
   "version": "1.2.1",
   "homepage": "https://github.com/tb/factory",
   "authors": [
@@ -32,4 +33,3 @@ me": "factory",
     "tests"
   ]
 }
-
