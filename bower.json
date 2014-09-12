@@ -1,5 +1,4 @@
-{
-  "name": "factory",
+me": "factory",
   "version": "1.2.1",
   "homepage": "https://github.com/tb/factory",
   "authors": [
@@ -24,7 +23,6 @@
   ],
   "license": "MIT",
   "ignore": [
-    "**.*",
     "*.*",
     "LICENSE",
     "src",
@@ -34,3 +32,4 @@
     "tests"
   ]
 }
+
