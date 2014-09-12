@@ -6,7 +6,10 @@
     "Tomasz Bak <t.bak@selleo.com>"
   ],
   "description": "Building JavaScript objects inspired by rosie.js and factory_girl",
-  "main": "dist/factory.js",
+  "main": [
+    "dist/factory.js",
+    "dist/factory.min.js"
+  ],
   "moduleType": [
     "globals",
     "node"
