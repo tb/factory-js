@@ -1,0 +1,32 @@
+{
+  "name": "factory",
+  "version": "1.2.1",
+  "homepage": "https://github.com/tb/factory",
+  "authors": [
+    "Tomasz Bak <t.bak@selleo.com>"
+  ],
+  "description": "Building JavaScript objects inspired by rosie.js and factory_girl",
+  "main": "dist/factory.js",
+  "moduleType": [
+    "globals",
+    "node"
+  ],
+  "keywords": [
+    "fixtures",
+    "tests",
+    "data",
+    "build",
+    "seeds",
+    "factory_girl"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**.*",
+    "*.*",
+    "src",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
