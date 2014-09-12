@@ -7,8 +7,7 @@
   ],
   "description": "Building JavaScript objects inspired by rosie.js and factory_girl",
   "main": [
-    "dist/factory.js",
-    "dist/factory.min.js"
+    "dist/factory.js"
   ],
   "moduleType": [
     "globals",
