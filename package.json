@@ -7,6 +7,7 @@
     "test data",
     "fixture"
   ],
+  "main": "./dist/factory.js",
   "devDependencies": {
     "grunt": "~0.4.2",
     "grunt-banner": "~0.2.2",
