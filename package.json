@@ -1,13 +1,26 @@
 {
   "name": "factory-js",
-  "version": "1.3.0",
+  "version": "1.3.2",
+  "description": "Building JavaScript objects inspired by rosie and factory_girl",
+  "main": "./dist/factory.js",
+  "license": "MIT",
+  "author": "Tomasz Bak <t.bak@selleo.com>",
   "keywords": [
     "factory",
     "factory_girl",
     "test data",
     "fixture"
   ],
-  "main": "./dist/factory.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tb/factory-js"
+  },
+  "bugs": {
+    "url": "https://github.com/tb/factory-js/issues"
+  },
+  "scripts": {
+    "test": "grunt test"
+  },
   "devDependencies": {
     "grunt": "~0.4.2",
     "grunt-banner": "~0.2.2",
@@ -20,8 +33,5 @@
     "grunt-istanbul": "~0.3.0",
     "grunt-simple-mocha": "~0.4.0",
     "chai": "~1.9.1"
-  },
-  "scripts": {
-    "test": "grunt test"
   }
 }

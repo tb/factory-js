@@ -5,52 +5,40 @@ Building JavaScript objects inspired by [rosie](https://github.com/bkeepers/rosi
 
 Factory can integrate with JavaScript framework persistence layer through [Adapters](#adapters).
 
-## Setup for Ember.js
-
-Call `Factory.setupForEmber(App)` before factory definitions. See live example at [jsbin](http://emberjs.jsbin.com/serolule/edit)
-
-NOTE: You need to call `Factory.reset()` to reset sequences for each test run.
-
 ## Usage
 
-    Factory.define('vote', function() {
-      this.sequence('id');
-      this.attr('value', 0);
-      this.trait('up', function() {
+    Factory.define('vote')
+      .sequence('id')
+      .attr('value', 0)
+      .trait('up', function() {
         return this.attr('value', 1);
-      });
-      return this.trait('down', function() {
+      })
+      .trait('down', function() {
         return this.attr('value', -1);
       });
-    });
 
-    Factory.define('post', function() {
-      this.sequence('id');
-      this.sequence('title', function(i) {
+    Factory.define('post')
+      .sequence('id')
+      .sequence('title', function(i) {
         return "Post " + i;
-      });
-      this.attr('content', null);
-      this.hasMany('votes', 'vote');
-      return this.after(function() {
+      })
+      .attr('content', null)
+      .hasMany('votes', 'vote')
+      .after(function() {
         if (!this.content) {
           return this.content = "" + this.title + " content";
         }
       });
-    });
 
-    Factory.define('category', function() {
-      this.sequence('id');
-      this.sequence('name', function(i) {
+    Factory.define('category')
+      .sequence('id')
+      .sequence('name', function(i) {
         return "Category " + i;
-      });
-      this.ignore('postsCount', 0);
-      return this.after(function(attributes) {
+      })
+      .ignore('postsCount', 0)
+      .after(function(attributes) {
         return this.posts = Factory.buildList('post', attributes.postsCount);
       });
-    });
-
-
-NOTE: looks better with CoffeeScript ;-)
 
 ### Build with no attributes
 
@@ -153,6 +141,12 @@ or per factory definition
 
     Factory.define 'yourModel', ->
       @adapter Factory.YourAdapter
+
+## Setup for Ember.js
+
+Call `Factory.setupForEmber(App)` before factory definitions. See live example at [jsbin](http://emberjs.jsbin.com/serolule/edit)
+
+NOTE: You need to call `Factory.reset()` to reset sequences for each test run.
 
 ## Contributing
 

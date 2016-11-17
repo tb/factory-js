@@ -6,7 +6,14 @@ describe 'Factory', ->
     Factory.clear()
 
   describe '#define', ->
-    it 'can be chained', ->
+    it 'only name', ->
+      factory = Factory
+      .define('factoryItem')
+      .sequence('id')
+
+      expect(factory.attrs).to.have.keys('id')
+
+    it 'static and dynamic attributes', ->
       factory = Factory
         .define('factoryItem', field1: '1')
         .sequence('id')
