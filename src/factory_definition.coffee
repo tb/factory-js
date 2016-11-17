@@ -10,6 +10,7 @@ class FactoryDefinition
 
   adapter: (adapter) ->
     @buildAdapter = new adapter(@)
+    @
 
   build: (buildType, name, attrs) ->
     if @buildAdapter[buildType]
@@ -19,9 +20,11 @@ class FactoryDefinition
 
   after: (callback) ->
     @callbacks.push callback
+    @
 
   attr: (attr, value) ->
     @attrs[attr] = (if typeof value is 'function' then value else -> value)
+    @
 
   hasMany: (attr, factoryName) ->
     @ignore attr, []
@@ -30,9 +33,11 @@ class FactoryDefinition
 
       Factory.buildList(factoryName, attributes[attr]).forEach (object) =>
         factory.buildAdapter['push'].call @, attr, object
+    @
 
   ignore: (attr, value) ->
     @ignores[attr] = (if typeof value is 'function' then value else -> value)
+    @
 
   sequence: (attr, block) ->
     factory = @
@@ -41,11 +46,13 @@ class FactoryDefinition
     @attrs[attr] = ->
       factory.sequences[attr] = factory.sequences[attr] || 0
       block.call @, ++factory.sequences[attr]
+    @
 
   trait: (name, block) ->
     definition = new FactoryDefinition(name)
     block.call(definition) if typeof block is 'function'
     @traits[name] = definition
+    @
 
   attributes: (attrs, traits) ->
     attributes = Factory.hash.merge {}, attrs

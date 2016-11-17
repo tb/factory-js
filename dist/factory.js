@@ -1,4 +1,4 @@
-/*! factory 1.2.1 */
+/*! factory-js 1.3.0 */
 var Factory,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -51,10 +51,14 @@ Factory = (function() {
   };
 
   Factory.define = function(name, block) {
-    var definition;
+    var definition, k;
     definition = new FactoryDefinition(name);
     if (typeof block === 'function') {
       block.call(definition);
+    } else {
+      for (k in block) {
+        definition.attr(k, block[k]);
+      }
     }
     return this.factories[name] = definition;
   };
@@ -227,7 +231,8 @@ FactoryDefinition = (function() {
   }
 
   FactoryDefinition.prototype.adapter = function(adapter) {
-    return this.buildAdapter = new adapter(this);
+    this.buildAdapter = new adapter(this);
+    return this;
   };
 
   FactoryDefinition.prototype.build = function(buildType, name, attrs) {
@@ -239,18 +244,20 @@ FactoryDefinition = (function() {
   };
 
   FactoryDefinition.prototype.after = function(callback) {
-    return this.callbacks.push(callback);
+    this.callbacks.push(callback);
+    return this;
   };
 
   FactoryDefinition.prototype.attr = function(attr, value) {
-    return this.attrs[attr] = (typeof value === 'function' ? value : function() {
+    this.attrs[attr] = (typeof value === 'function' ? value : function() {
       return value;
     });
+    return this;
   };
 
   FactoryDefinition.prototype.hasMany = function(attr, factoryName) {
     this.ignore(attr, []);
-    return this.after(function(attributes, factory) {
+    this.after(function(attributes, factory) {
       if (!(this[attr] instanceof Array)) {
         this[attr] = [];
       }
@@ -260,12 +267,14 @@ FactoryDefinition = (function() {
         };
       })(this));
     });
+    return this;
   };
 
   FactoryDefinition.prototype.ignore = function(attr, value) {
-    return this.ignores[attr] = (typeof value === 'function' ? value : function() {
+    this.ignores[attr] = (typeof value === 'function' ? value : function() {
       return value;
     });
+    return this;
   };
 
   FactoryDefinition.prototype.sequence = function(attr, block) {
@@ -274,10 +283,11 @@ FactoryDefinition = (function() {
     block = block || function(i) {
       return i;
     };
-    return this.attrs[attr] = function() {
+    this.attrs[attr] = function() {
       factory.sequences[attr] = factory.sequences[attr] || 0;
       return block.call(this, ++factory.sequences[attr]);
     };
+    return this;
   };
 
   FactoryDefinition.prototype.trait = function(name, block) {
@@ -286,7 +296,8 @@ FactoryDefinition = (function() {
     if (typeof block === 'function') {
       block.call(definition);
     }
-    return this.traits[name] = definition;
+    this.traits[name] = definition;
+    return this;
   };
 
   FactoryDefinition.prototype.attributes = function(attrs, traits) {

@@ -18,7 +18,12 @@ class Factory
 
   @define: (name, block) ->
     definition = new FactoryDefinition(name)
-    block.call(definition) if typeof block is 'function'
+    if typeof block is 'function'
+      block.call(definition)
+    else
+      for k of block
+        definition.attr(k, block[k])
+
     @factories[name] = definition
 
   @getFactory: (name) ->

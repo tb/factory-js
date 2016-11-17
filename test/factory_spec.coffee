@@ -5,6 +5,18 @@ describe 'Factory', ->
   beforeEach ->
     Factory.clear()
 
+  describe '#define', ->
+    it 'can be chained', ->
+      factory = Factory
+        .define('factoryItem', field1: '1')
+        .sequence('id')
+        .trait('withTrait')
+        .attr('field2', 2)
+        .attr('field3', 3)
+
+      expect(factory.attrs).to.have.keys('id', 'field1', 'field2', 'field3')
+      expect(factory.traits).to.have.keys('withTrait')
+
   describe '#clear', ->
     it 'removes factories', ->
       Factory.define 'factoryItem'
